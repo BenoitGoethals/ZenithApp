@@ -42,7 +42,7 @@ namespace ZenithApp.model
             return Lines.Remove(line);
         }
 
-        public void RemoveOrderline(Guid lineId)
+        public void RemoveOrderline(int lineId)
         {
             var pos = Lines.FindIndex(i => i.Id == lineId);
             Lines.RemoveAt(pos);

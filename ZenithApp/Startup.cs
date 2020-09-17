@@ -41,11 +41,12 @@ namespace ZenithApp
                    mysqlOptions =>
                       mysqlOptions.ServerVersion(new ServerVersion(new Version(5, 5, 57), ServerType.MariaDb))), ServiceLifetime.Singleton);
 
-
+            services.AddDbContext<ApplicationDbContextMaria>(ServiceLifetime.Transient);
+            services.AddSingleton<Register>();
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddBootstrapCss();
-
+            services.AddSingleton<BasketService>();
 
             services.AddSingleton<ProductService>();
             services.AddSingleton<TypeProductService>();

@@ -151,8 +151,8 @@ else
         {
             _editContext = new EditContext(_basket);
             await Task.Yield();
-            Products = await ProductService.All();
-            Random rnd = new Random();
+            Products =  ProductService.All();
+          
             Thread.Sleep(2000);  // Task.Delay() is much preferred
             Products.ForEach(t => _counters.Add(t, 0));
         }
@@ -172,8 +172,8 @@ else
 
         private void OrderBasket()
         {
-            register.AddBasket(_basket);
-            NavigationManager.NavigateTo("/", true);
+            register.AddBasketAsync(_basket);
+            NavigationManager.NavigateTo("/Order", true);
         }
 
         private void AddProduct(Product product)

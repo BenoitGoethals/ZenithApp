@@ -15,6 +15,7 @@ namespace ZenithApp.Data
             builder.Property(f => f.Id)
                .ValueGeneratedOnAdd(); ;
             builder.Property(s => s.Count).HasColumnName(nameof(OrderLine.Count)).HasMaxLength(50).IsRequired();
+            builder.HasOne<Product>(s => s.Product).WithMany().OnDelete(DeleteBehavior.Restrict);
 
 
 

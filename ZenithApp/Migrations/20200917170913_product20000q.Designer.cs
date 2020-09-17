@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ZenithApp.Data;
 
 namespace ZenithApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContextMaria))]
-    partial class ApplicationDbContextMariaModelSnapshot : ModelSnapshot
+    [Migration("20200917170913_product20000q")]
+    partial class product20000q
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,9 +54,9 @@ namespace ZenithApp.Migrations
 
             modelBuilder.Entity("ZenithApp.model.OrderLine", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("char(36)");
 
                     b.Property<int>("BasketId")
                         .HasColumnType("int");

@@ -1,4 +1,4 @@
-﻿@page "/overview"
+﻿@page "/Overview"
 @using global::ZenithApp.model
 @using Microsoft.EntityFrameworkCore
 
@@ -91,7 +91,7 @@
     @code{
 
 
-        private List<Basket> _baskets;
+        private List<Basket> _baskets=new List<Basket>();
 
         BSModal SizeLarge { get; set; }
 
@@ -117,15 +117,16 @@
 
             register.Subsribe(Update);
             _baskets = await register.All();
+              await InvokeAsync(StateHasChanged);
         }
 
 
-        private async void Update()
+        private  void Update()
         {
 
-            _baskets = await register.All();
+        //    _baskets =  register.All().Result.ToList();
 
-            await InvokeAsync(StateHasChanged);
+             InvokeAsync(StateHasChanged);
 
 
         }

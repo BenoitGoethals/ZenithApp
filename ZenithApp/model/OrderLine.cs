@@ -5,7 +5,7 @@ namespace ZenithApp.model
 {
     public class OrderLine
     {
-        public Guid Id { get; }
+        public int Id { get; }
         [Required]
         public Product Product { get; set; }
 
@@ -23,7 +23,7 @@ namespace ZenithApp.model
         }
         public OrderLine(Product product, int count)
         {
-            Id = Guid.NewGuid();
+          
             Product = product;
             Count = count;
         }

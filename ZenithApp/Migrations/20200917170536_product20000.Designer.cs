@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ZenithApp.Data;
 
 namespace ZenithApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContextMaria))]
-    partial class ApplicationDbContextMariaModelSnapshot : ModelSnapshot
+    [Migration("20200917170536_product20000")]
+    partial class product20000
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,12 +36,14 @@ namespace ZenithApp.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnName("Email")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("varchar(20) CHARACTER SET utf8mb4")
+                        .HasMaxLength(20);
 
                     b.Property<string>("Gsm")
                         .IsRequired()
                         .HasColumnName("Gsm")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("varchar(20) CHARACTER SET utf8mb4")
+                        .HasMaxLength(20);
 
                     b.Property<bool>("Payed")
                         .HasColumnName("Payed")
@@ -52,9 +56,9 @@ namespace ZenithApp.Migrations
 
             modelBuilder.Entity("ZenithApp.model.OrderLine", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("char(36)");
 
                     b.Property<int>("BasketId")
                         .HasColumnType("int");

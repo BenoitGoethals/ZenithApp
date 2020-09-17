@@ -13,8 +13,8 @@ namespace ZenithApp.Data
         public void Configure(EntityTypeBuilder<Basket> builder)
         {
             builder.Property(f => f.Id).ValueGeneratedOnAdd();
-            builder.Property(s => s.Gsm).HasColumnName(nameof(Basket.Gsm)).HasMaxLength(20).IsRequired();
-            builder.Property(s => s.Email).HasColumnName(nameof(Basket.Email)).HasMaxLength(20).IsRequired();
+            builder.Property(s => s.Gsm).HasColumnName(nameof(Basket.Gsm)).IsRequired();
+            builder.Property(s => s.Email).HasColumnName(nameof(Basket.Email)).IsRequired();
             builder.Property(s => s.DateTimeCreated).HasColumnName(nameof(Basket.DateTimeCreated)).IsRequired();
             builder.Property(s => s.Collected).HasColumnName(nameof(Basket.Collected)).IsRequired();
             builder.Property(s => s.Payed).HasColumnName(nameof(Basket.Payed)).IsRequired();

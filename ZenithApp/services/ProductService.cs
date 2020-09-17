@@ -13,29 +13,16 @@ namespace ZenithApp.services
     {
         private ILogger<ProductService> _logger;
         private ApplicationDbContextMaria ApplicationDbContext;
-        private List<Product> _list = new List<Product>();
+        private object oo = new object();
         public ProductService(ILogger<ProductService> logger, ApplicationDbContextMaria applicationDbContext)
         {
-            this.ApplicationDbContext = applicationDbContext;
+            this.ApplicationDbContext = applicationDbContext?? throw new ArgumentNullException("MyCoolDbContext is null", (Exception)null);
             _logger = logger;
-            /*
-            TypeProduct typeProduct=new TypeProduct(1,"Drank");
-            TypeProduct typeProduct2=new TypeProduct(1,"Chips");
-            var product2 = new Product(1, "Cola", "Colq",12.5, "45be3", 6, null, typeProduct);
-            product2.Image = ImageHelper.ConvertToByte(@"cola.jpg");
-          
-            var product3 = new Product(2, "Corona", "Corona",2, "45be4", 6, null, typeProduct);
-            product3.Image = ImageHelper.ConvertToByte(@"OIP.jpg");
-            var product4 = new Product(3, "Coronq", "Chips",12.5, "45be5", 6, null, typeProduct2);
-            product4.Image = ImageHelper.ConvertToByte(@"croc.jpg");
-            _list.Add(product2);
-            _list.Add(product3);
-            _list.Add(product4);
-            */
+            
         }
-        public Task<List<Product>> All()
+        public List<Product> All()
         {
-            return ApplicationDbContext.Products.ToListAsync<Product>();
+            return ApplicationDbContext.Products.ToList<Product>();
 
         }
 
@@ -60,11 +47,13 @@ namespace ZenithApp.services
                     }
                     else
                     {
-                        await ApplicationDbContext.Products.AddAsync(productAdd);
+                        ApplicationDbContext.Products.Add(productAdd);
                     }
-
-                    await ApplicationDbContext.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                  
+                        ApplicationDbContext.SaveChanges();
+                        transaction.Commit();
+                  
+                     
                 }
                 catch (Exception e)
                 {
