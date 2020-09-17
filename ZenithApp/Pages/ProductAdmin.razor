@@ -1,0 +1,253 @@
+﻿@page "/ProductAdmin"
+@using global::ZenithApp.model
+@using ZenithApp.services
+@using global::ZenithApp.helpers
+@using System.Collections.ObjectModel
+@using System.IO
+@using System.Threading
+@using Tewr.Blazor.FileReader
+@using ButtonType = Radzen.ButtonType
+@inject IFileReaderService fileReaderService
+
+@inject ProductService Service
+@inject TypeProductService TypeService
+
+@if (Products == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <BSContainer IsFluid="true">
+        <BSRow>
+            <BSCol>
+                <RadzenTemplateForm TItem="Product" Data="@ProductAdd" Submit="@OnSubmit" InvalidSubmit="@OnInvalidSubmit">
+
+                    <div class="col-md-6">
+                        <RadzenFieldset Text="Product">
+                            <div class="row">
+                                <div class="col-md-4 align-items-center d-flex">
+                                    <RadzenLabel Text="TypeProduct" />
+                                </div>
+                                <div class="col-md-8">
+                                    <RadzenDropDown @bind-Value="ProductAdd.TypeProduct" Id="TypeProduct" AllowClear="true" Placeholder="Select something" Data="@_typeProducts" style="width: 50%;" TextProperty="Name" ValueProperty="TypeProduct" Name="TypeProduct">
+                                    </RadzenDropDown>
+                                    <RadzenRequiredValidator Popup="true" Component="TypeProduct" Text="TypeProduct is required" Style="position: absolute" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 align-items-center d-flex">
+                                    <RadzenLabel Text="Name" />
+                                </div>
+                                <div class="col-md-8">
+                                    <RadzenTextBox style="width: 80%;" Name="Name" @bind-Value="ProductAdd.Name" />
+                                    <RadzenRequiredValidator Popup="true" Component="Name" Text="Name is required" Style="position: absolute" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 align-items-center d-flex">
+                                    <RadzenLabel Text="Description" />
+                                </div>
+                                <div class="col-md-8">
+                                    <RadzenTextArea style="width: 80%;" Name="Description" @bind-Value="ProductAdd.Description" />
+                                    <RadzenRequiredValidator Popup="true" Component="Description" Text="Description is required" Style="position: absolute" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 align-items-center d-flex">
+                                    <RadzenLabel Text="Code" />
+                                </div>
+                                <div class="col-md-8">
+                                    <RadzenTextBox style="width: 80%;" Name="Code" @bind-Value="ProductAdd.Code" />
+                                    <RadzenRequiredValidator Popup="true" Component="Code" Text="Code is required" Style="position: absolute" />
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-4 align-items-center d-flex">
+                                    <RadzenLabel Text="VatPercentage" />
+                                </div>
+                                <div class="col-md-8">
+                                    <RadzenTextBox style="width: 20%;" Name="VatString" @bind-Value="ProductAdd.VatString" />
+                                    <RadzenCompareValidator Value="@Convert.ToString(0.0)" Component="VatString" Popup="@true" Style="position: absolute" Operator="@compareOperator" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 align-items-center d-flex">
+                                    <RadzenLabel Text="Price" />
+                                </div>
+                                <div class="col-md-8">
+                                    <RadzenTextBox style="width: 20%;" Name="Price" @bind-Value="ProductAdd.PriceString" />
+                                    <RadzenRequiredValidator Component="Price" Text="Price required" Popup="true" Style="position: absolute" />
+                                    <RadzenCompareValidator Value="@Convert.ToString(0.0)" Component="Price" Popup="@true" Style="position: absolute" Operator="@compareOperator" />
+                                </div>
+                            </div>
+
+
+
+
+                            <div class="row">
+                                <div class="col-md-4 align-items-center d-flex">
+                                    <RadzenLabel Text="Image" />
+                                </div>
+                                <div class="col-md-8">
+
+
+                                    <input type="file" @ref="inputElement" @onchange="ImageFileSelected" accept=".jpg,.jpeg,.png" Style="margin-bottom: 20px;" />
+                                </div>
+                            </div>
+                            <div class="row justify-content-center">
+                                <div class="col-md-12 d-flex align-items-end justify-content-center" style="margin-top: 16px;">
+                                    <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save" />
+                                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="cancel" style="display: inline-block; margin-left: 10px;" Text="Cancel" />
+                                </div>
+                            </div>
+                        </RadzenFieldset>
+                    </div>
+
+                </RadzenTemplateForm>
+
+            </BSCol>
+
+        </BSRow>
+        <br />
+        <BSRow>
+
+            <BSCol MD="6">
+
+
+                <BSTable IsHoverable="true" IsBordered="true">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Image</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">TotalPrice</th>
+                            <th scope="col">Vat Percentage</th>
+                            <th scope="col">Type Product</th>
+                            <th scope="col">Edit</th>
+                            <th scope="col">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var bask in Products)
+                        {
+                            <tr>
+                                <th scope="row">@bask.Name</th>
+                                <td><img src="@ImageHelper.ConvertToBas64(@bask.Image)" style="width: 50px;"></td>
+                                <td>@bask?.Description</td>
+                                <td>@bask?.Price</td>
+                                <td>@bask?.TotalPrice</td>
+                                <td>@bask?.VatPercentage</td>
+                                <td>
+                                    @if (bask?.TypeProduct != null)
+                                    {
+                                        @bask?.TypeProduct.Name
+                                    }
+                                </td>
+
+                                <td><BSButton Color="Color.Warning" OnClick="@(() => Edit(bask))">Edit</BSButton></td>
+                                <td><BSButton Color="Color.Warning" OnClick="@(() => Delete(bask))">Delete</BSButton></td>
+                            </tr>
+                        }
+
+
+                    </tbody>
+                </BSTable>
+            </BSCol>
+        </BSRow>
+    </BSContainer>
+}
+
+
+
+@code {
+
+    //  public int count { get; set; }
+    public Product ProductAdd { get; set; } = new Product();
+
+    private ObservableCollection<Product> Products { get; set; }
+    public string ImageURL { get; set; }
+    public int ProductSelect { get; set; }
+    public object Cancel { get; set; }
+
+    private ObservableCollection<TypeProduct> _typeProducts;
+
+    CompareOperator compareOperator = CompareOperator.GreaterThan;
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await Task.Yield();
+        var res = await Service.All();
+        var res2 = await TypeService.All();
+
+        Products = new ObservableCollection<Product>(list: res);
+        _typeProducts = new ObservableCollection<TypeProduct>(res2);
+
+        Thread.Sleep(1000);  // Task.Delay() is much preferred
+        ProductAdd = new Product() { TypeProduct = res2.FirstOrDefault() };
+
+    }
+
+    async Task OnSubmit()
+    {
+        Service.Add(ProductAdd);
+        await OnInitializedAsync();
+        this.StateHasChanged();
+    }
+
+    void OnInvalidSubmit(FormInvalidSubmitEventArgs args)
+    {
+        Console.WriteLine(args.Errors);
+    }
+
+    private async Task Delete(Product pValue)
+    {
+        Service.Delete(pValue);
+        await OnInitializedAsync();
+        this.StateHasChanged();
+    }
+    private string imageBase64;
+    private ElementReference inputElement;
+
+    private async Task ImageFileSelected()
+    {
+
+
+
+
+        foreach (var file in await fileReaderService.CreateReference(inputElement).EnumerateFilesAsync())
+        {
+            await using MemoryStream memoryStream = await file.CreateMemoryStreamAsync(8 * 1024);
+            var imageBytes = new byte[memoryStream.Length];
+            memoryStream.Read(imageBytes, 0, (int)memoryStream.Length);
+            imageBase64 = Convert.ToBase64String(imageBytes);
+            ProductAdd.Image = imageBytes;
+
+            StateHasChanged();
+        }
+    }
+
+
+
+
+
+    private void Edit(Product bask)
+    {
+        ProductAdd = bask;
+        this.StateHasChanged();
+    }
+
+}

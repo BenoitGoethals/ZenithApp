@@ -1,0 +1,206 @@
+﻿@page "/Order"
+@inject ProductService ProductService
+@inject Register register;
+@using global::ZenithApp.model
+@using ZenithApp.services
+@using global::ZenithApp.helpers
+@using Microsoft.EntityFrameworkCore
+@using InputType = BlazorStrap.InputType
+@using System.ComponentModel.DataAnnotations
+@using System.Threading
+@using ButtonType = BlazorStrap.ButtonType
+@inject NavigationManager NavigationManager;
+
+
+
+@if (Products == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <BSContainer>
+        <BSRow>
+            <BSCol>
+                <div class="accordion">
+                    <h1>
+                        <div>
+                            <BSBadge Color="Color.Secondary">List Products</BSBadge>
+                        </div>
+
+                        <div>
+                            @if (IsOpen)
+                            {
+                                <BSButton Color="Color.Info" OnClick="Onclick">Collapse List</BSButton>
+                            }
+                            else
+                            {
+                                <BSButton Color="Color.Info" OnClick="Onclick">Open List</BSButton>
+                            }
+
+                        </div>
+
+
+
+
+                    </h1>
+                    <BSCollapseGroup>
+
+                        @foreach (var pValue in Products)
+                        {
+                            <BSCollapseItem @key="@pValue.Id">
+                                <BSCard CardType="CardType.Card">
+                                    <BSCard CardType="CardType.Header">
+                                        <BSCollapseToggle>
+                                            <BSCard CardType="CardType.Image" style="width: 100px" src="@ImageHelper.ConvertToBas64(@pValue.Image)" alt="Card image cap" />
+                                            : @pValue.Name
+
+                                        </BSCollapseToggle>
+                                    </BSCard>
+                                    <BSCollapse IsOpen="@IsOpen">
+                                        <BSCard CardType="CardType.Body">
+                                            <BSCard CardType="CardType.Subtitle">Code : @pValue.Code</BSCard>
+                                            <BSCard CardType="CardType.Text">Description : @pValue.Description</BSCard>
+                                            <BSCard CardType="CardType.Text">Price : @pValue.Price</BSCard>
+                                            <BSCard CardType="CardType.Text">Vat : @pValue.VatPercentage</BSCard>
+                                            <BSCard CardType="CardType.Text">Type Product : @pValue.TypeProduct.Name</BSCard>
+                                            <BSLabel For="formControlRange">Count</BSLabel>
+                                            @_counters[pValue]
+
+
+                                            <BSButton Color="Color.Primary" Size="Size.Medium" OnClick="@(() => @Add(pValue))">+</BSButton>
+                                            <BSButton Color="Color.Primary" Size="Size.Medium" OnClick="@(() => @Min(pValue))" IsDisabled="@(_counters[pValue] < 1)">-</BSButton>
+                                            <BSButton Color="Color.Primary" Size="Size.Medium" OnClick="@(() => AddProduct(pValue))" IsDisabled="@(_counters[pValue] < 1)">Add</BSButton>
+
+                                        </BSCard>
+                                    </BSCollapse>
+                                </BSCard>
+                            </BSCollapseItem>
+                        }
+                    </BSCollapseGroup>
+
+                </div>
+            </BSCol>
+            <BSCol>
+                <BSTable IsHoverable="true">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">count</th>
+                            <th scope="col">Vat</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @foreach (var orderline in _basket.AllLines())
+                        {
+                            <tr>
+                                <th scope="row">@orderline.Product.Name</th>
+                                <td>@orderline.Product.Price</td>
+                                <td>@orderline.Count</td>
+                                <td>@orderline.Product.VatPercentage</td>
+                                <td>@orderline.Total()</td>
+                                <td>
+                                    <BSButton Color="Color.Warning" OnClick="@(() => @Delete(orderline))">Delete</BSButton>
+                                </td>
+                            </tr>
+                        }
+
+
+
+                    </tbody>
+
+                </BSTable>
+                <BSForm OnValidSubmit="@(() => @OrderBasket())" ValidateOnInit="true" EditContext="@_editContext">
+                    <DataAnnotationsValidator />
+                    <BSValidationSummary></BSValidationSummary>
+                    <BSFormGroup>
+                        <BSLabel For="email">Email address</BSLabel>
+                        <BSInput Id="email" @bind-Value="_basket.Email" />
+
+                        <BSLabel For="gsm">Mobile Nr :</BSLabel>
+
+                        <BSInput Id="gsm" @bind-Value="_basket.Gsm" />
+
+                    </BSFormGroup>
+
+                    <BSCard CardType="CardType.Body">
+                        <BSCard CardType="CardType.Title">Vat Total: @_basket.TotalVat() Euro</BSCard>
+                        <BSCard CardType="CardType.Title">Total: @_basket.Total() Euro</BSCard>
+                        <BSButton Color="Color.Primary" ButtonType="ButtonType.Submit" IsDisabled="@Valid">Order</BSButton>
+
+                    </BSCard>
+                </BSForm>
+            </BSCol>
+        </BSRow>
+    </BSContainer>
+    @code{
+        public EditContext _editContext;
+        //  public int count { get; set; }
+        private Basket _basket = new Basket();
+        public int Count { get; set; }
+        private Dictionary<Product, int> _counters = new Dictionary<Product, int>();
+        private List<Product> Products { get; set; }
+        bool IsOpen { get; set; } = true;
+        protected override async Task OnInitializedAsync()
+        {
+            _editContext = new EditContext(_basket);
+            await Task.Yield();
+            Products = await ProductService.All();
+            Random rnd = new Random();
+            Thread.Sleep(2000);  // Task.Delay() is much preferred
+            Products.ForEach(t => _counters.Add(t, 0));
+        }
+
+
+
+        void Onclick(MouseEventArgs e)
+        {
+            IsOpen = !IsOpen;
+            StateHasChanged();
+        }
+
+        private void Delete(OrderLine orderline)
+        {
+            _basket.RemoveOrderline(orderline);
+        }
+
+        private void OrderBasket()
+        {
+            register.AddBasket(_basket);
+            NavigationManager.NavigateTo("/", true);
+        }
+
+        private void AddProduct(Product product)
+        {
+            _basket.Add(new OrderLine(product, _counters[product]));
+            Console.WriteLine(_counters[product]);
+        }
+
+        public bool Valid
+        {
+            get { return (!_editContext.Validate()) || (_basket.AllLines().Count <= 0); }
+        }
+
+
+        private void Add(Product product)
+        {
+            ++_counters[product];
+
+        }
+
+        private void Min(Product product)
+        {
+            if (_counters[product] > 0)
+            {
+                --_counters[product];
+            }
+        }
+
+    }
+}

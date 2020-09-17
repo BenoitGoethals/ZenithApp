@@ -1,0 +1,133 @@
+﻿@page "/overview"
+@using global::ZenithApp.model
+@using Microsoft.EntityFrameworkCore
+
+@inject Register register
+
+
+
+<BSTable IsHoverable="true">
+    <thead>
+        <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Email</th>
+            <th scope="col">Gsm</th>
+            <th scope="col">Payed</th>
+            <th scope="col">Total</th>
+            <th scope="col">Vat</th>
+            <th scope="col">Collected</th>
+            <th scope="col">Detail</th>
+            <th scope="col">Pay</th>
+            <th scope="col">Collected</th>
+            <th scope="col">Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var bask in _baskets)
+        {
+        <tr>
+            <th scope="row">@bask.DateTimeCreated</th>
+            <td>@bask.Email</td>
+            <td>@bask.Gsm</td>
+            <td>@bask.Payed</td>
+            <td>@bask.Total()</td>
+            <td>@bask.TotalVat()</td>
+            <td>@bask.Collected</td>
+            <td><BSButton Color="Color.Warning" @onclick="@(() => SizeLarge.Show())">Detail</BSButton></td>
+            <BSModal @ref="SizeLarge" Size="Size.Large">
+                <BSModalHeader OnClick="@(() => SizeLarge.Hide())"> <p>Detail Basket</p></BSModalHeader>
+                <BSModalBody>
+                    <table>
+
+
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">count</th>
+                                <th scope="col">Vat</th>
+                                <th scope="col">Total</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @foreach (var orderline in bask.AllLines())
+                            {
+                                <tr>
+                                    <th scope="row">@orderline.Product.Name</th>
+                                    <td>@orderline.Product.Description</td>
+                                    <td>@orderline.Product.Price</td>
+                                    <td>@orderline.Count</td>
+                                    <td>@orderline.Product.VatPercentage</td>
+                                    <td>@orderline.Total()</td>
+
+                                </tr>
+                            }
+
+
+
+                        </tbody>
+                    </table>
+                </BSModalBody>
+                <BSModalFooter>
+                    <BSButton Color="Color.Secondary" @onclick="@(() => SizeLarge.Hide())">Close</BSButton>
+
+                </BSModalFooter>
+            </BSModal>
+
+
+
+            <td><BSButton Color="Color.Warning" OnClick="@(()=>@Pay(bask))">Pay</BSButton></td>
+            <td><BSButton Color="Color.Warning" OnClick="@(()=>@Collected(bask))" IsActive="@(!bask.Collected)">Collected</BSButton></td>
+            <td><BSButton Color="Color.Warning" OnClick="@(()=>@Delete(bask))">Delete</BSButton></td>
+        </tr>
+    }
+
+
+        </tbody>
+    </BSTable>
+    @code{
+
+
+        private List<Basket> _baskets;
+
+        BSModal SizeLarge { get; set; }
+
+        private void Pay(Basket bask)
+        {
+            bask.Payed = true;
+        }
+
+        private async void Delete(Basket bask)
+        {
+            register.Remove(bask);
+            await InvokeAsync(StateHasChanged);
+        }
+
+        private void Collected(Basket bask)
+        {
+            bask.Collected = !bask.Collected;
+        }
+
+
+        protected override async Task OnInitializedAsync()
+        {
+
+            register.Subsribe(Update);
+            _baskets = await register.All();
+        }
+
+
+        private async void Update()
+        {
+
+            _baskets = await register.All();
+
+            await InvokeAsync(StateHasChanged);
+
+
+        }
+
+    }
