@@ -20,9 +20,9 @@ namespace ZenithApp.services
             _logger = logger;
 
         }
-        public Task<List<Basket>> All()
+        public List<Basket> All()
         {
-            return ApplicationDbContext.Baskets.ToListAsync<Basket>();
+            return ApplicationDbContext.Baskets.ToList<Basket>();
 
         }
 
@@ -32,7 +32,7 @@ namespace ZenithApp.services
         }
 
 
-        public async void Add(Basket basket)
+        public  void Add(Basket basket)
         {
             var data = ApplicationDbContext.Products.FirstOrDefault(i => i.Id.Equals(basket.Id));
             using var transaction = ApplicationDbContext.Database.BeginTransaction();
@@ -47,16 +47,16 @@ namespace ZenithApp.services
                     }
                     else
                     {
-                        await ApplicationDbContext.Baskets.AddAsync(basket);
+                         ApplicationDbContext.Baskets.Add(basket);
                     }
 
-                    await ApplicationDbContext.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                    ApplicationDbContext.SaveChanges();
+                    transaction.Commit();
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e.StackTrace);
-                    await transaction.RollbackAsync();
+                     transaction.Rollback();
 
                 }
             }

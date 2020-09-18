@@ -25,7 +25,7 @@ namespace ZenithApp.model
 
 
 
-        public DateTime DateTimeCreated { get; set; }
+        public DateTime DateTimeCreated { get;  } =DateTime.Now;
 
 
 

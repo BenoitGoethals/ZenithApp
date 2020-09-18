@@ -10,22 +10,15 @@ namespace ZenithApp.services
 {
     public class TypeProductService
     {
-        private ApplicationDbContextMaria DbContext;
+        private readonly ApplicationDbContextMaria _dbContext;
         public TypeProductService(ApplicationDbContextMaria dbContext)
         {
-            this.DbContext = dbContext;
-        }
-        private List<TypeProduct> _list;
-
-        public TypeProductService()
-        {
-
+            this._dbContext = dbContext;
         }
 
-        public Task<List<TypeProduct>> All()
-        {
-            return DbContext.TypeProducts.ToListAsync<TypeProduct>();
 
-        }
+
+
+        public Task<List<TypeProduct>> All => _dbContext.TypeProducts.ToListAsync<TypeProduct>();
     }
 }

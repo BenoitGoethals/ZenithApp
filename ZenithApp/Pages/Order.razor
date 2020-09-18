@@ -26,9 +26,9 @@ else
             <BSCol>
                 <div class="accordion">
                     <h1>
-                        <div>
+                      
                             <BSBadge Color="Color.Secondary">List Products</BSBadge>
-                        </div>
+                      
 
                         <div>
                             @if (IsOpen)
@@ -65,7 +65,7 @@ else
                                             <BSCard CardType="CardType.Text">Description : @pValue.Description</BSCard>
                                             <BSCard CardType="CardType.Text">Price : @pValue.Price</BSCard>
                                             <BSCard CardType="CardType.Text">Vat : @pValue.VatPercentage</BSCard>
-                                            <BSCard CardType="CardType.Text">Type Product : @pValue.TypeProduct.Name</BSCard>
+                                            <BSCard CardType="CardType.Text">Type Product : @pValue.TypeProduct?.Name</BSCard>
                                             <BSLabel For="formControlRange">Count</BSLabel>
                                             @_counters[pValue]
 
@@ -116,7 +116,7 @@ else
                     </tbody>
 
                 </BSTable>
-                <BSForm OnValidSubmit="@(() => @OrderBasket())" ValidateOnInit="true" EditContext="@_editContext">
+                <BSForm OnValidSubmit="@(@OrderBasket)" ValidateOnInit="true" EditContext="@EditContext">
                     <DataAnnotationsValidator />
                     <BSValidationSummary></BSValidationSummary>
                     <BSFormGroup>
@@ -140,16 +140,16 @@ else
         </BSRow>
     </BSContainer>
     @code{
-        public EditContext _editContext;
+        public EditContext EditContext;
         //  public int count { get; set; }
-        private Basket _basket = new Basket();
+        private readonly Basket _basket = new Basket();
         public int Count { get; set; }
-        private Dictionary<Product, int> _counters = new Dictionary<Product, int>();
+        private readonly Dictionary<Product, int> _counters = new Dictionary<Product, int>();
         private List<Product> Products { get; set; }
         bool IsOpen { get; set; } = true;
         protected override async Task OnInitializedAsync()
         {
-            _editContext = new EditContext(_basket);
+            EditContext = new EditContext(_basket);
             await Task.Yield();
             Products =  ProductService.All();
           
@@ -165,9 +165,9 @@ else
             StateHasChanged();
         }
 
-        private void Delete(OrderLine orderline)
+        private void Delete(OrderLine orderLine)
         {
-            _basket.RemoveOrderline(orderline);
+            _basket.RemoveOrderline(orderLine);
         }
 
         private void OrderBasket()
@@ -182,10 +182,7 @@ else
             Console.WriteLine(_counters[product]);
         }
 
-        public bool Valid
-        {
-            get { return (!_editContext.Validate()) || (_basket.AllLines().Count <= 0); }
-        }
+        public bool Valid => (!EditContext.Validate()) || (_basket.AllLines().Count <= 0);
 
 
         private void Add(Product product)

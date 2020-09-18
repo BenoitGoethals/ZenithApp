@@ -191,7 +191,7 @@ else
 
         await Task.Yield();
         var res =  Service.All();
-        var res2 = await TypeService.All();
+        var res2 = await TypeService.All;
 
         Products = new ObservableCollection<Product>(list: res);
         _typeProducts = new ObservableCollection<TypeProduct>(res2);

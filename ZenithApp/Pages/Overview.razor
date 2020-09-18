@@ -116,7 +116,7 @@
         {
 
             register.Subsribe(Update);
-            _baskets = await register.All();
+            _baskets =  register.All();
               await InvokeAsync(StateHasChanged);
         }
 
@@ -124,7 +124,7 @@
         private  void Update()
         {
 
-        //    _baskets =  register.All().Result.ToList();
+            _baskets =  register.All();
 
              InvokeAsync(StateHasChanged);
 

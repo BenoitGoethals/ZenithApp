@@ -9,18 +9,18 @@ namespace ZenithApp.model
 {
     public class Register
     {
-        private BasketService BasketService;
+        private readonly BasketService _basketService;
         public Register(BasketService basketService)
         {
-            BasketService = basketService;
+            _basketService = basketService;
         }
-     //   private ObservableCollection<Basket> _collection = new ObservableCollection<Basket>();
+     
         private object Olock = new object();
         private readonly List<Action> _actions = new List<Action>();
 
         public Register()
         {
-        //    _collection.CollectionChanged += _collection_CollectionChanged;
+   
         }
 
         private void _collection_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -34,8 +34,8 @@ namespace ZenithApp.model
 
         public void Remove(Basket basket)
         {
-            BasketService.Delete(basket);
-     //       _collection.Remove(basket);
+            _basketService.Delete(basket);
+     
             lock (Olock)
             {
                 _actions.ForEach(a => a.Invoke());
@@ -44,23 +44,29 @@ namespace ZenithApp.model
 
         public  void AddBasketAsync(Basket basket)
         {
-             BasketService.Add(basket);
-            
+            _basketService.Add(basket);
+
+            lock (Olock)
+            {
                 _actions.ForEach(a => a.Invoke());
-            
+            }
+
             // _collection.Add(basket);
         }
 
-        public Task<List<Basket>> All()
+        public List<Basket> All()
         {
-            return BasketService.All();
+            return _basketService.All();
 
         }
 
 
         public void Subsribe(Action update)
         {
-            _actions.Add(update);
+            lock (Olock)
+            {
+                _actions.Add(update);
+            }
         }
     }
 }

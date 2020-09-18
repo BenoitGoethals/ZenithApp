@@ -24,9 +24,21 @@ namespace ZenithApp
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
         {
             Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json",
+                    optional: false,
+                    reloadOnChange: true)
+                .AddEnvironmentVariables();
+
+            if (env.IsDevelopment())
+            {
+                builder.AddUserSecrets<Startup>();
+            }
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -35,9 +47,9 @@ namespace ZenithApp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-
+            var connection = Configuration["connection"];
             services.AddDbContext<ApplicationDbContextMaria>(options => options
-               .UseMySql("Server=localhost; Database=zenith;User=root;Password=ranger14;IgnoreCommandTransaction=true",
+              .UseMySql(connection,
                    mysqlOptions =>
                       mysqlOptions.ServerVersion(new ServerVersion(new Version(5, 5, 57), ServerType.MariaDb))), ServiceLifetime.Singleton);
 
