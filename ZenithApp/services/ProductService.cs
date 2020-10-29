@@ -13,7 +13,7 @@ namespace ZenithApp.services
     {
         private ILogger<ProductService> _logger;
         private ApplicationDbContextMaria ApplicationDbContext;
-        private object oo = new object();
+        private object _oo = new object();
         public ProductService(ILogger<ProductService> logger, ApplicationDbContextMaria applicationDbContext)
         {
             this.ApplicationDbContext = applicationDbContext?? throw new ArgumentNullException("MyCoolDbContext is null", (Exception)null);
@@ -32,7 +32,7 @@ namespace ZenithApp.services
         }
 
 
-        public async void Add(Product productAdd)
+        public  void Add(Product productAdd)
         {
             var data = ApplicationDbContext.Products.FirstOrDefault(i => i.Id.Equals(productAdd.Id));
             using var transaction = ApplicationDbContext.Database.BeginTransaction();
@@ -50,15 +50,15 @@ namespace ZenithApp.services
                         ApplicationDbContext.Products.Add(productAdd);
                     }
                   
-                        ApplicationDbContext.SaveChanges();
-                        transaction.Commit();
+                    ApplicationDbContext.SaveChanges();
+                    transaction.Commit();
                   
                      
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e.StackTrace);
-                    await transaction.RollbackAsync();
+                     transaction.RollbackAsync();
 
                 }
             }

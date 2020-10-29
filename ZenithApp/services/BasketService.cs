@@ -22,7 +22,7 @@ namespace ZenithApp.services
         }
         public List<Basket> All()
         {
-            return ApplicationDbContext.Baskets.ToList<Basket>();
+            return ApplicationDbContext.Baskets.Include(b=>b.Lines).ThenInclude(p=>p.Product).ToList<Basket>();
 
         }
 

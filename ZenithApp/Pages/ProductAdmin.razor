@@ -8,7 +8,7 @@
 @using Tewr.Blazor.FileReader
 @using ButtonType = Radzen.ButtonType
 @inject IFileReaderService fileReaderService
-
+@attribute [Authorize]
 @inject ProductService Service
 @inject TypeProductService TypeService
 
@@ -190,13 +190,13 @@ else
     {
 
         await Task.Yield();
-        var res =  Service.All();
+        var res = Service.All();
         var res2 = await TypeService.All;
 
         Products = new ObservableCollection<Product>(list: res);
         _typeProducts = new ObservableCollection<TypeProduct>(res2);
 
-        Thread.Sleep(1000);  // Task.Delay() is much preferred
+        Thread.Sleep(500);  // Task.Delay() is much preferred
         ProductAdd = new Product() { TypeProduct = res2.FirstOrDefault() };
 
     }

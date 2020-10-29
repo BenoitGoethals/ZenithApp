@@ -30,7 +30,7 @@ else
                             <BSBadge Color="Color.Secondary">List Products</BSBadge>
                       
 
-                        <div>
+                       
                             @if (IsOpen)
                             {
                                 <BSButton Color="Color.Info" OnClick="Onclick">Collapse List</BSButton>
@@ -40,7 +40,6 @@ else
                                 <BSButton Color="Color.Info" OnClick="Onclick">Open List</BSButton>
                             }
 
-                        </div>
 
 
 
@@ -142,18 +141,19 @@ else
     @code{
         public EditContext EditContext;
         //  public int count { get; set; }
-        private readonly Basket _basket = new Basket();
+        private Basket _basket;
         public int Count { get; set; }
         private readonly Dictionary<Product, int> _counters = new Dictionary<Product, int>();
         private List<Product> Products { get; set; }
         bool IsOpen { get; set; } = true;
         protected override async Task OnInitializedAsync()
         {
+            _basket = new Basket();
             EditContext = new EditContext(_basket);
             await Task.Yield();
             Products =  ProductService.All();
-          
-            Thread.Sleep(2000);  // Task.Delay() is much preferred
+
+            Thread.Sleep(500);  // Task.Delay() is much preferred
             Products.ForEach(t => _counters.Add(t, 0));
         }
 
@@ -173,6 +173,7 @@ else
         private void OrderBasket()
         {
             register.AddBasketAsync(_basket);
+            _basket = new Basket(); ;
             NavigationManager.NavigateTo("/Order", true);
         }
 

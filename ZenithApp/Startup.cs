@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BlazorStrap;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ using NLog.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Tewr.Blazor.FileReader;
+using ZenithApp.auth;
 using ZenithApp.Data;
 using ZenithApp.model;
 using ZenithApp.services;
@@ -73,6 +75,8 @@ namespace ZenithApp
                 builder.AddConsole();
 
             });
+            services.AddAuthorizationCore();
+            services.AddScoped<AuthenticationStateProvider, ZenithAuthenticationStateProvider>();
 
         }
 

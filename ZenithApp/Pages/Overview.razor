@@ -3,7 +3,15 @@
 @using Microsoft.EntityFrameworkCore
 
 @inject Register register
-
+@attribute [Authorize]
+<AuthorizeView Roles="admin">
+    <Authorized>
+        Authorized @context.User.Identity.Name
+    </Authorized>
+    <NotAuthorized>
+        NotAuthorized @context.User.Identity.Name
+    </NotAuthorized>
+</AuthorizeView>
 
 
 <BSTable IsHoverable="true">
@@ -23,112 +31,137 @@
         </tr>
     </thead>
     <tbody>
+
         @foreach (var bask in _baskets)
         {
-        <tr>
-            <th scope="row">@bask.DateTimeCreated</th>
-            <td>@bask.Email</td>
-            <td>@bask.Gsm</td>
-            <td>@bask.Payed</td>
-            <td>@bask.Total()</td>
-            <td>@bask.TotalVat()</td>
-            <td>@bask.Collected</td>
-            <td><BSButton Color="Color.Warning" @onclick="@(() => SizeLarge.Show())">Detail</BSButton></td>
-            <BSModal @ref="SizeLarge" Size="Size.Large">
-                <BSModalHeader OnClick="@(() => SizeLarge.Hide())"> <p>Detail Basket</p></BSModalHeader>
-                <BSModalBody>
-                    <table>
+
+            SizeLarge[_count] = new BSModal();
+            <tr>
+                <th scope="row">@bask.DateTimeCreated</th>
+                <td>@bask.Email</td>
+                <td>@bask.Gsm</td>
+                <td>@bask.Payed</td>
+                <td>@bask.Total()</td>
+                <td>@bask.TotalVat()</td>
+                <td>@bask.Collected</td>
 
 
-                        <thead>
-                            <tr>
-                                <th scope="col">Name</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">count</th>
-                                <th scope="col">Vat</th>
-                                <th scope="col">Total</th>
 
-                            </tr>
-                        </thead>
-                        <tbody>
+                <td><BSButton Color="Color.Warning" @onclick="@(() => SizeLarge[_count].Show())">Detail</BSButton></td>
+                <BSModal @ref="SizeLarge[_count]" Size="Size.Large">
+                    <BSModalHeader OnClick="@(() => SizeLarge[_count].Hide())">
+                        <p>Detail Basket</p>
+                    </BSModalHeader>
+                    <BSModalBody>
+                        <table>
 
-                            @foreach (var orderline in bask.AllLines())
-                            {
+
+                            <thead>
                                 <tr>
-                                    <th scope="row">@orderline.Product.Name</th>
-                                    <td>@orderline.Product.Description</td>
-                                    <td>@orderline.Product.Price</td>
-                                    <td>@orderline.Count</td>
-                                    <td>@orderline.Product.VatPercentage</td>
-                                    <td>@orderline.Total()</td>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">count</th>
+                                    <th scope="col">Vat</th>
+                                    <th scope="col">Total</th>
 
                                 </tr>
-                            }
+                            </thead>
+                            <tbody>
+
+                                @foreach (var orderline in bask.AllLines())
+                                {
+                                    <tr>
+                                        <th scope="row">@orderline.Product.Name</th>
+                                        <td>@orderline.Product.Description</td>
+                                        <td>@orderline.Product.Price</td>
+                                        <td>@orderline.Count</td>
+                                        <td>@orderline.Product.VatPercentage</td>
+                                        <td>@orderline.Total()</td>
+
+                                    </tr>
+                                }
 
 
 
-                        </tbody>
-                    </table>
-                </BSModalBody>
-                <BSModalFooter>
-                    <BSButton Color="Color.Secondary" @onclick="@(() => SizeLarge.Hide())">Close</BSButton>
+                            </tbody>
+                        </table>
+                    </BSModalBody>
+                    <BSModalFooter>
+                        <BSButton Color="Color.Secondary" @onclick="@(() => SizeLarge[_count].Hide())">Close</BSButton>
 
-                </BSModalFooter>
-            </BSModal>
+                    </BSModalFooter>
+                </BSModal>
 
 
 
-            <td><BSButton Color="Color.Warning" OnClick="@(()=>@Pay(bask))">Pay</BSButton></td>
-            <td><BSButton Color="Color.Warning" OnClick="@(()=>@Collected(bask))" IsActive="@(!bask.Collected)">Collected</BSButton></td>
-            <td><BSButton Color="Color.Warning" OnClick="@(()=>@Delete(bask))">Delete</BSButton></td>
-        </tr>
+                <td><BSButton Color="Color.Warning" OnClick="@(() => @Pay(bask))" IsDisabled="Auth">Pay</BSButton></td>
+                <td><BSButton Color="Color.Warning" OnClick="@(() => @Collected(bask))" IsDisabled="Auth" IsActive="@(!bask.Collected)">Collected</BSButton></td>
+                <td><BSButton Color="Color.Warning" OnClick="@(() => @Delete(bask))" IsDisabled="Auth">Delete</BSButton></td>
+
+
+            </tr>
+          //  UpdateCounter();
+            ;
+        }
+        _count=0
+
+    </tbody>
+</BSTable>
+@code{
+
+    [CascadingParameter] private Task<AuthenticationState> AuthenState { get; set; }
+    public bool Auth { get; set; }
+    private int _count = 0;
+
+    private List<Basket> _baskets = new List<Basket>();
+
+    BSModal[] SizeLarge { get; set; }
+
+    private void Pay(Basket bask)
+    {
+        bask.Payed = true;
+
+    }
+
+    private async void Delete(Basket bask)
+    {
+        register.Remove(bask);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Collected(Basket bask)
+    {
+        bask.Collected = !bask.Collected;
+    }
+
+    private void UpdateCounter()
+    {
+        ++_count;
     }
 
 
-        </tbody>
-    </BSTable>
-    @code{
+    protected override async Task OnInitializedAsync()
+    {
+        _count = 0;
+
+        register.Subsribe(Update);
+        _baskets = register.All();
+        SizeLarge = new BSModal[_baskets.Count + 1];
+        var au = await AuthenState;
+        Auth = !au.User.Identity.IsAuthenticated;
+        await InvokeAsync(StateHasChanged);
+    }
 
 
-        private List<Basket> _baskets=new List<Basket>();
+    private void Update()
+    {
 
-        BSModal SizeLarge { get; set; }
+        _baskets = register.All();
 
-        private void Pay(Basket bask)
-        {
-            bask.Payed = true;
-        }
+        InvokeAsync(StateHasChanged);
 
-        private async void Delete(Basket bask)
-        {
-            register.Remove(bask);
-            await InvokeAsync(StateHasChanged);
-        }
-
-        private void Collected(Basket bask)
-        {
-            bask.Collected = !bask.Collected;
-        }
-
-
-        protected override async Task OnInitializedAsync()
-        {
-
-            register.Subsribe(Update);
-            _baskets =  register.All();
-              await InvokeAsync(StateHasChanged);
-        }
-
-
-        private  void Update()
-        {
-
-            _baskets =  register.All();
-
-             InvokeAsync(StateHasChanged);
-
-
-        }
 
     }
+
+}

@@ -23,14 +23,6 @@ namespace ZenithApp.model
    
         }
 
-        private void _collection_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            lock (Olock)
-            {
-                _actions.ForEach(a => a.Invoke());
-            }
-
-        }
 
         public void Remove(Basket basket)
         {
